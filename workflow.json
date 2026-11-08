@@ -1,0 +1,297 @@
+{
+  "name": "My workflow 3",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "رفع مناقصة لتحليلها",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "ملف المناقصة (PDF)",
+              "fieldType": "file",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "بريد المسؤول عن التقديم",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        0,
+        0
+      ],
+      "id": "c1d3e3ec-6051-4b37-becf-57e4191ecbc7",
+      "name": "On form submission",
+      "webhookId": "18bedc5a-ad1c-4621-a407-96e1735957e3"
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "binaryPropertyName": "______________PDF_",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        224,
+        0
+      ],
+      "id": "07c2334e-e13c-4092-a455-29bee724e22a",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=أنت خبير مناقصات. اقرأ وثيقة المناقصة التالية واستخرج: المتطلبات الأساسية، المواعيد النهائية المهمة، الوثائق المطلوبة للتقديم، الشروط الخاصة. بناءً على ذلك أعطِ توصية Go/No-Go/Review مع السبب. أعد النتيجة كـ JSON فقط: {\"requirements\": [\"...\"], \"deadlines\": [\"...\"], \"required_documents\": [\"...\"], \"special_conditions\": [\"...\"], \"recommendation\": \"Go/No-Go/Review\", \"reasoning\": \"...\"}\n\nنص المناقصة:\n{{ $json.text }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        448,
+        0
+      ],
+      "id": "5030e30d-7b6f-4c67-953a-638a03b524dc",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemma-4-31b-it",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        520,
+        232
+      ],
+      "id": "3d3a125d-e81e-46bf-95b9-92984dac6b62",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "g38xyssK5TRcl82w",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $input.first().json.output;\nconst cleaned = raw.replace(/```json|```/g, '').trim();\nconst parsed = JSON.parse(cleaned);\nreturn [{ json: { ...parsed, reviewerEmail: $('On form submission').first().json['بريد المسؤول عن التقديم'] } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        816,
+        0
+      ],
+      "id": "b146c36c-d37d-445e-9b50-3d249d1c57bb",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1aHW74bQDyoTAG3vPY5yWSAq-yuluf8VBfU8kF0BTx40",
+          "mode": "list",
+          "cachedResultName": "Tenders",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1aHW74bQDyoTAG3vPY5yWSAq-yuluf8VBfU8kF0BTx40/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "الورقة1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1aHW74bQDyoTAG3vPY5yWSAq-yuluf8VBfU8kF0BTx40/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "recommendation": "={{ $json.recommendation }}",
+            "deadlines": "={{ $json.deadlines }}",
+            "requiredDocuments": "={{ $json.requirements }}",
+            "reasoning": "={{ $json.reasoning }}",
+            "analyzedAt": "={{ $now }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "recommendation",
+              "displayName": "recommendation",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "deadlines",
+              "displayName": "deadlines",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "requiredDocuments",
+              "displayName": "requiredDocuments",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "reasoning",
+              "displayName": "reasoning",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "analyzedAt",
+              "displayName": "analyzedAt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1040,
+        0
+      ],
+      "id": "538c8fb7-73d2-4a39-8951-e9a51df5b70b",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "5n1ZTwrHvTy8E86N",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Code in JavaScript').item.json.reviewerEmail }}",
+        "subject": "=تحليل المناقصة - التوصية: {{ $json.recommendation }}",
+        "message": "=التوصية: {{ $('Code in JavaScript').item.json.recommendation }}\n\nالسبب:{{ $('Code in JavaScript').item.json.reasoning }}\n\nالمتطلبات: -{{ $('Code in JavaScript').item.json.requirements }}\n\nالمواعيد النهائية: -{{ $('Code in JavaScript').item.json.deadlines }}\n\nالوثائق المطلوبة: - {{ $('Code in JavaScript').item.json.required_documents }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1216,
+        0
+      ],
+      "id": "93c2ec15-e61f-48dd-9901-79489234141f",
+      "name": "Send a message",
+      "webhookId": "7195cf3f-73c2-47b7-9ff5-e575d5601dbf",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "JDWqPw08fOqLMwmh",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "0d76bb4d-b301-45e0-87b0-b243e4bad402",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "a5a684b75324e6d2c88eba78c40965ea385652d197518547fda9971ebd20d242"
+  },
+  "nodeGroups": [],
+  "id": "xU2DVZgw0sMtzD06",
+  "tags": []
+}
