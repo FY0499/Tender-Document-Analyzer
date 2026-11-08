@@ -2,6 +2,8 @@
 
 I built this n8n workflow to analyze uploaded tender documents, extract important submission requirements and deadlines, and use AI to prepare a Go, No-Go, or Review recommendation.
 
+<img width="442" height="166" alt="image" src="https://github.com/user-attachments/assets/23ac67c3-9048-45d3-b916-dd7ba8bd66c3" />
+
 ## How it works
 
 1. A user uploads a tender PDF through a form and provides the email address of the person responsible for the submission.
